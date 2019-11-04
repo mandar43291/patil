@@ -1,0 +1,15 @@
+def sub(no1, no2):
+    return no1 - no2
+    
+    
+def decorater(originalfunction):
+    def updater():
+        if(a < b)
+          a, b = b, a
+     return originalfunction(a, b)
+ return updater
+ 
+ 
+ newsub = decorater(sub)
+ 
+ print(newsub(7,10))
