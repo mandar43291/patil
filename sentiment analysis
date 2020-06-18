@@ -1,0 +1,86 @@
+import bs4 as bs
+from sys import *
+from urllib.request import urlopen
+import urllib
+import csv
+import nltk
+import re
+#nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+ncount= 0
+pcount=0
+
+
+
+
+url = "https://www.amazon.in/Redmi-Note-Pro-Electric-Processor/product-reviews/B07X2KLYSF/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews&pageNumber=2"
+resultMid = url.index('next_')
+resultLst = url.index('ber=')
+
+indexMid = resultMid + 5
+indexLst = resultLst + 4
+
+indexLstTD = resultLst + 5
+
+indexLstTh = resultLst + 6
+comments = []
+urlst=[]
+corpus = []
+def replace_str_index(text,index=0,replacement=''):
+    return '%s%s%s'%(text[:index],replacement,text[index+1:])
+
+for i in range(1,4):
+    if(i < 9):
+        first = replace_str_index(url,indexMid,i)
+        second = replace_str_index(first,indexLst,i)
+        urlst.append(second)
+    elif(i > 9):
+        first = replace_str_index(url,indexMid,i)
+        second = replace_str_index(first,indexLstTD,i)
+        urlst.append(second)
+    elif(i > 99):
+        first = replace_str_index(url,indexMid,i)
+        second = replace_str_index(first,indexLstTh,i)
+        urlst.append(second)
+    
+    
+for i in urlst:
+    source = urllib.request.urlopen(i)
+    soup = bs.BeautifulSoup(source, 'html.parser')
+    container = soup.find_all("div", {"class": "a-row a-spacing-small review-data"})
+
+    for txt in container:
+        comments.append(txt.text)
+        
+for i in range(0,21):
+
+    # Cleaning special character from the reviews
+    review = re.sub(pattern='[^a-zA-Z]',repl=' ', string=comments[i])
+
+    # Converting the entire review into lower case
+    review = review.lower()
+
+    # Tokenizing the review by words
+    review_words = review.split()
+
+    # Removing the stop words
+    review_words = [word for word in review_words if not word in set(stopwords.words('english'))]
+    
+    
+    #join stement as it is for analysis of stetment
+    review = ' '.join(review_words)
+    ss = SentimentIntensityAnalyzer()
+    score = ss.polarity_scores(review)
+    
+    
+   # uncomment this if you want to check how much -ve & +ve review for product 
+   #if score['neg'] > score['pos']:
+   #  ncount+=1
+   #else:
+   #  pcount+=1
+      
+    print(comments[i])
+    print(score)
+
